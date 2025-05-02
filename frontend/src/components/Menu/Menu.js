@@ -12,8 +12,12 @@ export default function Menu(){
                         <a id="pg_inicial" className="nav-link fs-3"><li>Inicio</li></a>
                     </Link>
 
-                    <Link href={"/Favoritos"} legacyBehavior={true}>
+                    <Link href={"/Listas/Favoritos"} legacyBehavior={true}>
                         <a id="pg_favoritos" className="nav-link fs-3"><li>Favoritos</li></a>
+                    </Link>
+
+                    <Link href={"/Listas"} legacyBehavior={true}>
+                        <a id="pg_listas" className="nav-link fs-3"><li>Minhas Listas</li></a>
                     </Link>
                 </div>
 

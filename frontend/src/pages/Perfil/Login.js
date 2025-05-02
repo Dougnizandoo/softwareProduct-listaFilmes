@@ -1,5 +1,5 @@
 import SEO from "../../components/SEO"
-import { chamar_api_usuario } from "../../services/API/api.js";
+import { chamar_api} from "../../services/API/api.js";
 import { get_usuario } from "../../utils/get_usuario/get_usuario.js";
 import Link from "next/link"
 import { useState, useEffect } from "react"
@@ -34,10 +34,10 @@ export default function Login(){
 
     async function buscar_na_api(){
         try{
-            const busca = await chamar_api_usuario(dici, 'Login', 'POST');
+            const busca = await chamar_api(dici, 0, "POST", 0);
             return busca;
         } catch (err) {
-            console.log("Erro na busca", err);
+            console.error("Erro na busca", err);
             alert(`erro: ${err}`);
             return null;
         }
@@ -49,7 +49,6 @@ export default function Login(){
         setLoading(true);
         const busca = await buscar_na_api();
         setLoading(false);
-        console.log(busca);
         if (!busca) {
             alert("Erro ao buscar os dados, tente novamente.");
             return;
@@ -82,7 +81,7 @@ export default function Login(){
                     </div>
                     <hr />
                     <div id="div-btn" className="d-flex justify-content-between align-items-center">
-                        <Link href={"/Registro"} legacyBehavior={true}>
+                        <Link href={"/Perfil/Registro"} legacyBehavior={true}>
                             <a className="text-decoration-none">Registrar-se</a>
                         </Link>
                         <button id="btn-logar" className="btn btn-info" type="submit" disabled={loading}>

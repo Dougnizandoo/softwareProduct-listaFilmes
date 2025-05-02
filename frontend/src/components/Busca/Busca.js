@@ -1,4 +1,4 @@
-import { chamar_api_busca } from "@/services/API/api";
+import { chamar_api } from "@/services/API/api";
 import { useState } from "react"
 import Lista_Item from "./Lista_Item";
 
@@ -6,7 +6,8 @@ import Lista_Item from "./Lista_Item";
 export default function Busca(){
     const [busca, setBusca] = useState({
         "tipo": 0,
-        "pesquisa": ""
+        "pesquisa": "",
+        "pagina": 1
     })
     const [resultado, setResultado] = useState([]);
     const [carregando, setCarregando] = useState(null);
@@ -24,7 +25,7 @@ export default function Busca(){
 
     async function ChamarApi(){
         setCarregando(true);
-        let resp = await chamar_api_busca(busca, pagina.pagina_inicial);
+        let resp = await chamar_api(busca, 0, "GET", 2);
         setResultado(resp?.data?.busca);
         setPagina((prev) => ({
             ...prev,
@@ -37,7 +38,7 @@ export default function Busca(){
 
     async function Barra_Busca(event){
         event.preventDefault();
-        pagina.pagina_inicial = 1;
+        busca.pagina = 1;
         await ChamarApi();
     }
 
@@ -45,11 +46,11 @@ export default function Busca(){
     async function alterar_pagina(event) {
         const {name} = event.target;
         if (name === 'btn-mais' && pagina.pagina_inicial < pagina.total_paginas){
-            pagina.pagina_inicial = pagina.pagina_inicial + 1;
+            busca.pagina = pagina.pagina_inicial + 1;
             await ChamarApi();
 
         } else if (name === 'btn-menos' && pagina.pagina_inicial > 1){
-            pagina.pagina_inicial = pagina.pagina_inicial - 1;
+            busca.pagina = pagina.pagina_inicial - 1;
             await ChamarApi();
         }
 

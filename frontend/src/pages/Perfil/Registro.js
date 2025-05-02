@@ -1,7 +1,7 @@
 import Link from "next/link";
 import SEO from "../../components/SEO";
 import { useState, useEffect } from "react";
-import { chamar_api_usuario } from "../../services/API/api.js";
+import { chamar_api } from "@/services/API/api";
 import { useRouter } from "next/router";
 import { get_usuario } from "../../utils/get_usuario/get_usuario.js";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -71,13 +71,12 @@ export default function Registro(){
     }
 
 
-    async function chamar_api() {
+    async function api() {
         try{
-            console.log(dici)
-            const resp = await chamar_api_usuario(dici, "Registro", 'POST');
+            const resp = await chamar_api(dici, 1, 'POST', 0);
             return resp;
-        } catch {
-            console.log("Erro ao adicionar usuario", err);
+        } catch (err){
+            console.error("Erro ao adicionar usuario", err);
             alert(`erro: ${err}`);
             return null;
         }
@@ -87,7 +86,7 @@ export default function Registro(){
     async function Registrar(event){
         event.preventDefault();
         setLoading(true);
-        const resp = await chamar_api();
+        const resp = await api();
         setLoading(false);
 
         if (resp){
@@ -95,7 +94,7 @@ export default function Registro(){
                 alert("Email ja cadastrado!")
             } else {
                 alert("Conta registrada com sucesso!")
-                router.push("/Login")
+                router.push("/Perfil/Login")
             }
         }
     }
@@ -139,7 +138,7 @@ export default function Registro(){
                     </div>
                     <hr />
                     <div id="div-btn" className="d-flex justify-content-between align-items-center">
-                        <Link href={"/Login"} legacyBehavior={true}>
+                        <Link href={"/Perfil/Login"} legacyBehavior={true}>
                             <a className="text-decoration-none">Fazer Login</a>
                         </Link>
                         <button id="btn-Registrar" type="submit" disabled={loading} onClick={validar} className="btn btn-success">

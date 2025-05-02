@@ -1,69 +1,103 @@
 import { useRouter } from "next/router"
-import { chamar_api_busca_id, chamar_api_favorito } from "@/services/API/api.js";
+import { chamar_api } from "@/services/API/api.js";
 import { useState, useEffect } from "react";
 import SEO from "@/components/SEO";
 import Menu from "@/components/Menu/Menu";
 import { get_usuario } from "@/utils/get_usuario/get_usuario.js";
-import Details from "@/components/Details/Details.js";
+import Details from "@/components/Midia/Midia.js";
 
 
 export default function Detalhes(){
     const router = useRouter();
     const [ dados, setDados ] = useState(null);
     const usuario = get_usuario();
-    const [novoFavorito, setNovoFavorito] = useState({
-        "user_id": null,
-        "tmdb_id": null,
-        "tipo_midia": null
+    const ultimaPesquisa = JSON.parse(localStorage.getItem("ultima_pesquisa"));
+    const [novoItem, setNovoItem] = useState({
+        "user_id": usuario.id, 
+        "tmdb_id": ultimaPesquisa.tmdb_id,
+        "tipo_midia": ultimaPesquisa.tipo,
+        "table_id": "",
+        "canal_api": 1,
+        "table_nome": "Favoritos"
     })
     const [loading, setLoading] = useState(false);
+    const [listas, setListas] = useState(null);
 
 
     useEffect(() => {
-        async function buscar_detalhes(){
-            try{
-                const ultimaPesquisa = JSON.parse(localStorage.getItem("ultima_pesquisa"));
-                if (!ultimaPesquisa) {
-                    throw new Error("Nenhuma Pesquisa encontrada!")
-                }
-
-                const busca = await chamar_api_busca_id(ultimaPesquisa.tmdb_id, ultimaPesquisa.tipo);
-
-                if (busca){
-                    if (busca.status === "success"){
-                        setDados(busca.data);
-                        setNovoFavorito((prev) => ({
-                            ...prev,
-                            user_id: usuario.id,
-                            tmdb_id: ultimaPesquisa.tmdb_id,
-                            tipo_midia: ultimaPesquisa.tipo
-                        }));
-                    } else {
-                        alert(`Erro ao buscar dados: ${busca.errors}\n${busca.message}`);
-                    }
-                } else {
-                    throw new Error("Erro ao chamar api!");
-                }
-
-            }catch (err){
-                console.error(err);
-                setDados(null);
-            }
-        }
         buscar_detalhes();
-    }, [usuario]);
+        buscar_listas();
+    }, []);
+
+
+    async function buscar_listas(){
+        const busca = await chamar_api({"code": usuario.id}, 0, "GET", 4);
+
+        if (busca){
+            setListas(busca.data);
+        }
+    }
+
+
+    async function buscar_detalhes(){
+        try{
+            if (!ultimaPesquisa) {
+                throw new Error("Nenhuma Pesquisa encontrada!")
+            }
+
+            const busca = await chamar_api({'code': ultimaPesquisa.tmdb_id, 'tipo': ultimaPesquisa.tipo}, 0, "GET", 3);
+            if (busca){
+                if (busca.status === "success"){
+                    setDados(busca.data);
+                } else {
+                    alert(`Erro ao buscar dados: ${busca.errors}\n${busca.message}`);
+                }
+            } else {
+                throw new Error("Erro ao chamar api!");
+            }
+
+        }catch (err){
+            console.error(err);
+            setDados(null);
+        }
+    }
+
+
+    function handleChange(event){
+        const selectedIndex = event.target.selectedIndex;
+        const selectedOption = event.target.options[selectedIndex];
+        const value = selectedOption.value;
+        const nome = selectedOption.getAttribute("data-name");
+
+        if (value !== "1"){
+            setNovoItem((prev) => ({
+                ...prev,
+                table_id: value,
+                canal_api: 5,
+                table_nome: nome
+            }))
+        } else {
+            setNovoItem((prev) => ({
+                ...prev,
+                table_id: "",
+                canal_api: 1,
+                table_nome: "Favoritos"
+            }))
+        }
+    }
 
 
     async function Adicionar(){
         setLoading(true);
-        const resp = await chamar_api_favorito(novoFavorito, "Create", "POST")
+        const resp = await chamar_api(novoItem, 1, "POST", novoItem.canal_api);
 
         if (resp){
             if (resp.status === "success"){
-                alert ("Favorito adicionado a lista de Favoritos com sucesso!")
-                router.push("/Favoritos")
+                alert (`A midia foi adicionada a lista '${novoItem.table_nome}' com sucesso!`)
             } else{
-                alert (`Erro ao adicionar item a lista!\nErro ${resp.errors}\n${resp.message}`)
+                alert (`Erro ao adicionar item a lista!\nA lista já possui essa midida!`)
+                console.error(resp.errors);
+                console.error(resp.message);
             }
         }else {
             alert('Erro ao chamar api');
@@ -71,41 +105,59 @@ export default function Detalhes(){
         setLoading(false);
     }
 
-
     return (
         <>
-        {/* Menu fixo no topo */}
-        <Menu />
-
-        {/* Página de detalhes */}
-        <div className="container mt-4">
-            {dados ? (
-                <div className="row justify-content-center">
-                    <SEO titulo={dados.nome} descricao={`Página de detalhes sobre ${dados.nome}`} />
-
-                    {/* Card de detalhes */}
-                    <div className="col-md-8">
-                        <Details dados={dados} tipo={novoFavorito.tipo_midia} />
+            <Menu />
+            <div className="container mt-3 mb-3">
+                {dados ? (
+                    <div className="row justify-content-center">
+                        <SEO titulo={dados.nome} descricao={`Página de detalhes sobre ${dados.nome}`} />
+    
+                        <div className="col-md-10 col-lg-8 bg-dark text-light p-4 rounded shadow-lg">
+                            <Details dados={dados} tipo={novoItem.tipo_midia} />
+                            
+                            <hr className="bg-light my-4" />
+    
+                            <div className="text-center d-flex flex-column flex-sm-row align-items-center gap-3">
+                                <label htmlFor="select-listas" className="form-label mb-0 me-sm-2">
+                                    Adicionar a lista:
+                                </label>
+                                <select 
+                                    onChange={handleChange} 
+                                    id="select-listas" 
+                                    disabled={loading} 
+                                    className="form-select w-100 w-sm-auto"
+                                >
+                                    <option value={1}>Favorito</option>
+                                    {listas.map((item) => (
+                                        <option 
+                                            data-name={item.table_nome} 
+                                            key={item.table_id} 
+                                            value={item.table_id}
+                                        >
+                                            {item.table_nome}
+                                        </option>
+                                    ))}
+                                </select>
+    
+                                <button 
+                                    onClick={Adicionar} 
+                                    id="btn-add" 
+                                    disabled={loading} 
+                                    className="btn btn-success"
+                                >
+                                    Adicionar
+                                </button>
+                            </div>
+                        </div>
                     </div>
-
-                    {/* Botão abaixo do card */}
-                    <div className="col-md-8 text-center mt-3">
-                        <button 
-                            onClick={Adicionar} 
-                            disabled={loading} 
-                            className="btn btn-primary"
-                        >
-                            {loading ? "Adicionando..." : "Adicionar aos Favoritos"}
-                        </button>
+                ) : (
+                    <div className="text-center text-danger mt-5">
+                        <SEO titulo="Detalhes" descricao="Erro ao consultar detalhes!" />
+                        <h3>Erro ao consultar dados</h3>
                     </div>
-                </div>
-            ) : (
-                <div className="text-center text-danger mt-4">
-                    <SEO titulo="Detalhes" descricao="Erro ao consultar detalhes!" />
-                    <h3>Erro ao consultar dados</h3>
-                </div>
-            )}
-        </div>
-    </>
-    )
+                )}
+            </div>
+        </>
+    );    
 }

@@ -1,6 +1,6 @@
 import SEO from "../../components/SEO";
 import Menu from "../../components/Menu/Menu";
-import { chamar_api_usuario } from "../../services/API/api.js";
+import { chamar_api } from "../../services/API/api.js";
 import { get_usuario } from "../../utils/get_usuario/get_usuario.js";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
@@ -16,7 +16,7 @@ export default function Deletar(){
 
     useEffect(() => {
         const busca_usuario = get_usuario();
-        if (!busca_usuario) router.replace("/Login");
+        if (!busca_usuario) router.replace("/Perfil/Login");
         else { 
             setUsuario(busca_usuario);
             setBilhete_exclusao(prev => ({
@@ -42,9 +42,9 @@ export default function Deletar(){
         return true;
     }
 
-    async function chamar_api() {
+    async function api() {
         try {
-            const resposta = await chamar_api_usuario(bilhete_exclusao, "Excluir", "DELETE");
+            const resposta = await chamar_api(bilhete_exclusao, 2, "DELETE", 0);
             return resposta;
         } catch (err) {
             console.log("Erro ao chamar API: ", err);
@@ -59,21 +59,24 @@ export default function Deletar(){
         const resp = validar();
         if (resp === false) {
             alert("Senhas não combinam ou estão em branco");
-            setLoading(false);
         } else {
-            const resp = await chamar_api();
+            const resposta = window.confirm("Deseja mesmo excluir essa conta ?")
 
-            if (resp) {
-                if (resp.status === "success"){
-                    alert("Usuario Excluido com Sucesso!");
-                    localStorage.clear();
-                    router.push("/Login");
-                } else{
-                    alert("Senha invalida!");
-                    setLoading(false);
+            if (resposta){
+                const resp = await api();
+
+                if (resp) {
+                    if (resp.status === "success"){
+                        alert("Usuario Excluido com Sucesso!");
+                        localStorage.clear();
+                        router.push("/Perfil/Login");
+                    } else{
+                        alert("Senha invalida!");
+                    }
                 }
             }
         }
+        setLoading(false);
     }
 
     return(

@@ -1,7 +1,7 @@
 from flask import Blueprint, request
 from app.services import adicionar_favorito, buscar_favorito, deletar_favorito
 from app.models import modelo_resposta
-from app.utils import str_para_int as converter
+from app.utils import str_para_int as converter, ValidarJSON
 
 
 favApp = Blueprint("favApp", __name__)
@@ -19,13 +19,9 @@ def favoritos_setter():
     if not dados:
         return modelo_resposta(status="error", message="Arquivo JSON vazio!", status_code=400)
 
-    chaves_obrigatorias = {'user_id', 'tmdb_id', 'tipo_midia'}
-    if not chaves_obrigatorias.issubset(dados):
-        return modelo_resposta(status="error", message="Campos chave em falta", error=f'Para adicionar um novo favorito as seguintes chaves devem estar presentes: {chaves_obrigatorias}', status_code=400)
-
-    for chave in chaves_obrigatorias:
-        if not dados[chave] or not str(dados[chave]).strip():
-            return modelo_resposta(status="error", message="Chave sem valor", error=f'A chave: {chave} não pode ser um valor nulo!', status_code=400)
+    valido = ValidarJSON(dados=dados, chaves_obrigatorias={'user_id', 'tmdb_id', 'tipo_midia'})
+    if not isinstance(valido, bool): 
+        return valido
 
     return adicionar_favorito(dados)
 
@@ -37,12 +33,8 @@ def favoritos_delete():
     if not dados:
         return modelo_resposta(status="error", message="Arquivo JSON vazio!", status_code=400)
     
-    chaves_obrigatorias = {"user_id", "tmdb_id"}
-    if not chaves_obrigatorias.issubset(dados):
-        return modelo_resposta(status="error", message="Campos chave em falta", error=f'Para remover um favorito as seguintes chaves devem estar presentes: {chaves_obrigatorias}', status_code=400)
-
-    for chave in chaves_obrigatorias:
-        if not dados[chave] or not str(dados[chave]).strip():
-            return modelo_resposta(status="error", message="Chave sem valor", error=f'A chave: {chave} não pode ser um valor nulo!', status_code=400)
+    valido = ValidarJSON(dados=dados, chaves_obrigatorias={"user_id", "tmdb_id"})
+    if not isinstance(valido, bool): 
+        return valido
 
     return deletar_favorito(dados)

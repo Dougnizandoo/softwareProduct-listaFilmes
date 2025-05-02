@@ -13,7 +13,7 @@ export default function Home(){
 
     useEffect(() => {
         const busca_usuario = get_usuario();
-        if (!busca_usuario) router.replace("/Login");
+        if (!busca_usuario) router.replace("/Perfil/Login");
         else setUsuario(busca_usuario);
     }, []);
 

@@ -14,13 +14,13 @@ export default function Perfil(){
 
     useEffect(() => {
         const busca = get_usuario();
-        if (!busca) router.replace("/Login")
+        if (!busca) router.replace("/Perfil/Login")
         setUsuario(busca)
     }, []);
 
     function sair_perfil(){
         localStorage.clear();
-        router.push("/Login");
+        router.push("/Perfil/Login");
     }
 
     return(

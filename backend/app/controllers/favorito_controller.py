@@ -2,19 +2,20 @@ from app.models import modelo_resposta
 from app.services import DB_postgres as DB
 from app.services import TMDB_API as API
 from app.utils import ConverterGenero
+from app.utils import query_create, query_read, query_delete
 
 
 # Read
-def buscar_favorito(id_usuario: str) -> tuple:
+def buscar_favorito(id_usuario: str) -> dict:
     """
-        -> Metodo para listar id do tmdb vinculados com o usuario.
+        Busca todos os favoritos associados a um usuário.
 
         Args:
-            id_usuario (str): id do usuario para busca.
+            id_usuario (str): ID do usuario no sistema.
         Returns:
-            tuple: retorna uma tupla, com um dicionario python formatado para o frontend e um codigo de status.
+            dict: Resposta padronizada contendo a lista de mídias favoritas ou mensagem de erro.
     """
-    query = 'SELECT t.tmdb_id, t.tipo_midia from impacta.favoritos t WHERE t.user_id = %s ;'
+    query = query_read('favoritos', ['user_id'], ['tmdb_id', 'tipo_midia'])
     dados = DB().buscar_banco(query, [id_usuario])
     if len(dados) == 0:
         return modelo_resposta(message='Lista vazia', error='Nenhum dado foi encontrado!')
@@ -28,16 +29,19 @@ def buscar_favorito(id_usuario: str) -> tuple:
     return modelo_resposta(data=resp)
 
 # Create
-def adicionar_favorito(dados: dict) -> tuple:
+def adicionar_favorito(dados: dict) -> dict:
     """
-        -> Metodo para vincular um id do tmdb com um usuario.
+        Adiciona uma nova midia à lista de favoritos do usuário.
 
         Args:
-            dados (dict): Dicionario contendo o id de usuario e o id do tmdb.
+            dados (dict): Dicionário deve conter os campos: 
+                - user_id (str): ID do usuário.
+                - tmdb_id (str): ID da mídia (referente ao TMDB).
+                - tipo_midia (int): Tipo da mídia (0 = Filme, 1 = Série).
         Returns:
-            tuple: retorna uma tupla, com um dicionario python formatado para o frontend e um codigo de status.
+            dict: Resposta padronizada indicando sucesso ou erro.
     """
-    query = 'INSERT INTO impacta.favoritos (user_id, tmdb_id, tipo_midia) VALUES (%s, %s, %s);'
+    query = query_create('favoritos', ['user_id', 'tmdb_id', 'tipo_midia'])
     try:
         resp = DB().modificar_banco(query, [dados['user_id'], dados['tmdb_id'], dados['tipo_midia']])
         if not resp:
@@ -49,16 +53,18 @@ def adicionar_favorito(dados: dict) -> tuple:
 
 
 # Delete
-def deletar_favorito(dados: dict) -> tuple:
+def deletar_favorito(dados: dict) -> dict:
     """
-        -> Metodo para remover id do tmdb vinculado com o usuario.
+        Remove uma mida da lista de favoritos do usuário.
 
         Args:
-            dados (dict): Dicionario com o id do usuario e o id do tmdb.
+            dados (dict): Dicionário deve conter os campos: 
+                - user_id (str): ID do usuário.
+                - tmdb_id (str): ID da mídia (referente ao TMDB).
         Returns:
-            tuple: retorna uma tupla, com um dicionario python formatado para o frontend e um codigo de status.
+            dict: Resposta padronizada indicando sucesso ou erro.
     """
-    query = "DELETE FROM impacta.favoritos WHERE user_id=%s AND tmdb_id=%s;"
+    query = query_delete('favoritos', ['user_id', 'tmdb_id'])
     try:
         resp = DB().modificar_banco(query, [dados['user_id'], dados['tmdb_id']])
         return modelo_resposta(data=resp)

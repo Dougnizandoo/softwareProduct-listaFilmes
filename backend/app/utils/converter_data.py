@@ -1,6 +1,6 @@
 def converter_data(data: str) -> str:
     """
-        -> Metodo para formatar a data recebida pelo banco.
+        Metodo para formatar a data recebida pelo banco.
 
         Args:
             data (str): Data do banco em formato de string.

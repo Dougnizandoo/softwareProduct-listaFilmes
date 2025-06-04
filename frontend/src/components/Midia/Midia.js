@@ -1,6 +1,34 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 
 
+/**
+ *
+ * Componente React que exibe os detalhes de um filme ou série.
+ * Renderiza uma mensagem de erro caso `dados` não seja fornecido.
+ * 
+ * @param {Object} props
+ * @param {Object} props.dados - Objeto contendo os detalhes da mídia.
+ * @param {string} props.dados.nome - Nome do filme ou série.
+ * @param {string} props.dados.poster - URL da imagem do poster.
+ * @param {string} props.dados.descricao - Descrição da mídia.
+ * @param {string[]} props.dados.genero - Lista de gêneros.
+ * @param {number} props.dados.tipo_midia - Tipo da mídia (0 = filme, 1 = série).
+ * 
+ * // Para filmes (tipo_midia === 0)
+ * @param {string[]} [props.dados.pais_origem] - Lista dos países de origem.
+ * @param {number} [props.dados.duracao] - Duração em minutos.
+ * @param {string} [props.dados.data_lancamento] - Data de lançamento.
+ * @param {number} [props.dados.arrecadou] - Valor arrecadado.
+ * 
+ * // Para séries (tipo_midia === 1)
+ * @param {number} [props.dados.num_episodios] - Número de episódios.
+ * @param {number} [props.dados.num_temporadas] - Número de temporadas.
+ * @param {string} [props.dados.data_primeiro_ep] - Data do primeiro episódio.
+ * @param {string} [props.dados.status] - Status da série.
+ * 
+ * 
+ * @returns {JSX.Element} Elemento React com os detalhes da mídia.
+ */
 export default function Details({dados}){
     return(
         <>

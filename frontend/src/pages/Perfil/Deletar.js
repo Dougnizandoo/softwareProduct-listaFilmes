@@ -13,11 +13,15 @@ export default function Deletar(){
     const [loading, setLoading] = useState(false);
     const [senhas, setSenhas] = useState({"senha": "", "cSenha": ""});
     const [bilhete_exclusao, setBilhete_exclusao] = useState({"id": "", "email": "", "senha": ""});
+    const [err, setErr] = useState('');
+    const [mostrarSenha, setMostrarSenha] = useState(false);
 
+    // Redireciona para login se não houver usuário logado.
     useEffect(() => {
         const busca_usuario = get_usuario();
         if (!busca_usuario) router.replace("/Perfil/Login");
         else { 
+            // Preenche bilhete_exclusao com ID e e-mail do usuário.
             setUsuario(busca_usuario);
             setBilhete_exclusao(prev => ({
                 ...prev,
@@ -27,43 +31,51 @@ export default function Deletar(){
         }
     }, []);
 
+    // Atualiza os campos de senha digitados.
     function handleChange(event){
         const {name, value} = event.target;
+        setErr('');
         setSenhas((prev) => ({
             ...prev,
             [name]: value,
         }));
     }
 
+    // Verifica se os campos foram preenchidos e coincidem.
     function validar(){
         if (senhas.senha.trim() === "" || senhas.cSenha.trim() === "") return false;
         else if (senhas.senha !== senhas.cSenha) return false;
-        bilhete_exclusao.senha = senhas.senha;
         return true;
     }
 
-    async function api() {
+    // Envia a requisição DELETE para a API com os dados do usuário.
+    async function enviarSolicitacaoExclusao() {
         try {
             const resposta = await chamar_api(bilhete_exclusao, 2, "DELETE", 0);
             return resposta;
-        } catch (err) {
-            console.log("Erro ao chamar API: ", err);
-            alert("Erro ao chamar API");
+        } catch (erro) {
+            console.log("Erro ao chamar API: ", erro);
+            setErr("Erro ao chamar API");
             return null;
         }
     }
 
+    // Valida os dados e confirma com o usuário, se confirmado e bem-sucedido: Limpa o localStorage; Redireciona para login.
     async function Deletar_Usuario(event){
         event.preventDefault();
         setLoading(true);
         const resp = validar();
         if (resp === false) {
-            alert("Senhas não combinam ou estão em branco");
+            setErr("Senhas não combinam ou estão em branco");
         } else {
             const resposta = window.confirm("Deseja mesmo excluir essa conta ?")
 
             if (resposta){
-                const resp = await api();
+                setBilhete_exclusao(prev => ({
+                    ...prev,
+                    senha: senhas.senha
+                }));
+                const resp = await enviarSolicitacaoExclusao();
 
                 if (resp) {
                     if (resp.status === "success"){
@@ -71,13 +83,14 @@ export default function Deletar(){
                         localStorage.clear();
                         router.push("/Perfil/Login");
                     } else{
-                        alert("Senha invalida!");
+                        setErr("Senha invalida!");
                     }
                 }
             }
         }
         setLoading(false);
     }
+
 
     return(
         <>
@@ -90,20 +103,37 @@ export default function Deletar(){
                     <h2 className="fs-1 mb-4">Deseja Excluir sua Conta?</h2>
                     <h3 className="fs-2 mb-4">Para excluir a conta de: <b>{usuario.nome}</b>, digite sua senha:</h3>
                     <hr />
+                    {/** Mostra mensagem de erro caso algo falhe. */}
+                    {err && (
+                        <div className="alert alert-danger text-center mb-3" role="alert" style={{ fontSize: "0.9rem" }}>
+                            {err}
+                        </div>
+                    )}
                     <div className="container d-flex justify-content-center align-items-center" style={{ marginTop: "2vh"}}>
                         <div className="card shadow p-4" style={{ width: "100%" }}>
                             <form onSubmit={Deletar_Usuario}>
                                 <div className="mb-3">
                                     <label htmlFor="input-senha" className="form-label">Senha: </label>
-                                    <input id="input-senha" name="senha" type="password" className="form-control" required onChange={handleChange}/>
+                                    <input id="input-senha" name="senha" type={mostrarSenha ? "text" : "password"} className="form-control" required onChange={handleChange}/>
                                 </div>
                                 <div className="mb-3">
                                     <label htmlFor="input-cSenha" className="form-label">Confirme a Senha: </label>
-                                    <input id="input-cSenha" name="cSenha" type="password" className="form-control" required onChange={handleChange}/>
+                                    <input id="input-cSenha" name="cSenha" type={mostrarSenha ? "text" : "password"} className="form-control" required onChange={handleChange}/>
                                 </div>
                                 <div className="d-flex justify-content-center mt-3">
                                     {!loading ? (
-                                        <button type="submit" className="btn btn-danger text-center" id="btn-excluir">Excluir</button>
+                                        <div>
+                                            <button type="submit" className="btn btn-danger text-center" id="btn-excluir" style={{marginRight: "10px"}}>Excluir</button>
+                                            <button type="button" 
+                                            className="btn btn-sm btn-outline-secondary" 
+                                            id="btn-mostrarSenha" 
+                                            style={{marginLeft: "10px"}}
+                                            onMouseDown={() => setMostrarSenha(true)}
+                                            onMouseUp={() => setMostrarSenha(false)}
+                                            onMouseLeave={() => setMostrarSenha(false)}>
+                                                {mostrarSenha ? "🔒 Ocultar Senha" : "🔓 Mostrar Senha"}
+                                            </button>
+                                        </div>
                                     ) : (
                                         <p>Processando...</p>
                                     )}

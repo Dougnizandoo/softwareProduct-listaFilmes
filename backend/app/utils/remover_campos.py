@@ -1,6 +1,6 @@
 def remover_campos(dici: dict, campos: list) -> dict:
     """
-        -> Metodo para remover campos indesejados de um dicionario.
+        Metodo para remover campos indesejados de um dicionario.
 
         Args:
             dici (dict): Dicionario que deseja remover os campos.

@@ -30,11 +30,6 @@ export async function chamar_api(dados={}, rota=0, method="GET", canal=0) {
         return null;
     }
 
-    if (canal < 0 || canal > canais.length){
-        console.error("Numero do canal invalido!");
-        return null;
-    }
-
     let url = 'http://localhost:2323';
     switch (canal){
         case 2: // busca1

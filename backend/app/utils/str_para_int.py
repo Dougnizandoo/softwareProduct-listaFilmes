@@ -3,7 +3,7 @@ from app.models import modelo_resposta
 
 def str_para_int(converter: str, para: tuple | list, campo: int) -> int | dict:
     """
-        -> Metodo para converter string para int.
+        Metodo para converter string para int.
 
         Args:
             converter (str): string que deseja converter

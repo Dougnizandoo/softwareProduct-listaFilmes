@@ -3,7 +3,7 @@ from app.models import EnumGenero as Genero
 
 def ConverterGenero(dici: dict, genero_dici: bool = False) -> dict:
     """
-        -> Metodo para converter a chave 'genero' do dicionario
+        Metodo para converter a chave 'genero' do dicionario
 
         Args:
             dici (dict): dicionario com a chave 'genero presente'.

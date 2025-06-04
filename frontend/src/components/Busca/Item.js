@@ -2,10 +2,27 @@ import { useRouter } from "next/router"
 import "bootstrap/dist/css/bootstrap.min.css";
 
 
+/**
+ * Componente React que exibe um cartão com detalhes básicos de uma mídia (filme ou série).
+ * 
+ * Funcionalidade principal:
+ * - Ao clicar no card, armazena no localStorage a última mídia pesquisada (id e tipo) e redireciona para a rota de detalhes.
+ * 
+ * @param {Object} item - Objeto contendo os dados da mídia.
+ * @param {string} item.id - Identificador da mídia (ex: TMDB id).
+ * @param {string} item.nome - Nome da mídia.
+ * @param {string} item.poster - URL do pôster da mídia.
+ * @param {Array<string>} item.genero - Lista de gêneros da mídia.
+ * @param {number} item.tipo_midia - Tipo da mídia (ex: 0 para filme, 1 para série).
+ * 
+ * @param {string} rota_saida - Caminho para onde será redirecionado ao clicar no card.
+ * 
+ * @returns {JSX.Element} Cartão interativo com informações resumidas da mídia.
+ */
 export default function Item({ item, rota_saida }){
     const router = useRouter();
 
-
+    // Salva a ultima busca do usuario no localStorage
     function setUltimaBusca(event){
         event.preventDefault();
         let tmdb_id = event.currentTarget.getAttribute("data-id");

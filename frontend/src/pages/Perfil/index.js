@@ -1,10 +1,11 @@
 import SEO from "../../components/SEO";
 import Menu from "../../components/Menu/Menu";
 import { get_usuario } from "../../utils/get_usuario/get_usuario.js";
-import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import "bootstrap/dist/css/bootstrap.min.css";
+import VerificarLogin from "@/components/VerificarLogin/verificar_login";
+import { useRouter } from "next/router";
 
 
 export default function Perfil(){
@@ -12,12 +13,15 @@ export default function Perfil(){
     const router = useRouter();
     const [usuario, setUsuario] = useState(null);
 
+    // Verifica se o usuário está logado
     useEffect(() => {
-        const busca = get_usuario();
-        if (!busca) router.replace("/Perfil/Login")
-        setUsuario(busca)
+        const u = get_usuario();
+        if (u){
+            setUsuario(u);
+        }
     }, []);
 
+    // Remove todos os dados salvos do usuário e redireciona para a pagina de login
     function sair_perfil(){
         localStorage.clear();
         router.push("/Perfil/Login");
@@ -25,7 +29,9 @@ export default function Perfil(){
 
     return(
         <>
+        <VerificarLogin />
         <SEO titulo={"Perfil"} descricao={"Pagina inicial do perfil"}/>
+        {/** A página só é exibida se o usuário estiver logado e seus dados tiverem sido carregados. */}
         {usuario && (
             <>
             <Menu />
@@ -51,7 +57,6 @@ export default function Perfil(){
                         <li className="list-group-item"><b>Data Nascimento:</b> {usuario.data_nascimento}</li>
                         <li className="list-group-item"><b>Sexo:</b> {lista_genero[usuario.genero]}</li>
                         <li className="list-group-item"><b>Email:</b> {usuario.email}</li>
-                        <li className="list-group-item"><b>Total de Listas:</b> 1 </li>
                     </ul>
                 </div>
             </div>
